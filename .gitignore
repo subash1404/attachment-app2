@@ -1,0 +1,27 @@
+# Node modules
+node_modules/
+
+# Local environment variables
+.env
+.env.local
+.env.development
+.env.production
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Mac system files
+.DS_Store
+
+# Local uploads folder (Vercel won't use it)
+uploads/
+
+# Vercel build output
+.vercel/
+
+# Optional IDE files
+.vscode/
+.idea/
