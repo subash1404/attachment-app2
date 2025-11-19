@@ -23,12 +23,8 @@ app.use((req, res, next) => {
       "script-src 'self' 'unsafe-inline';",
       "style-src 'self' 'unsafe-inline';",
       "img-src 'self' data: blob:;",
-      "connect-src 'self';",
-
-      // REQUIRED FOR TEAMS / M365
+      "connect-src 'self' http://localhost:3978 https://699361c7573b.ngrok-free.app https://*.microsoft.com https://*.teams.microsoft.com https://*.office.com;",
       "frame-ancestors 'self' https://*.microsoft.com https://*.office.com https://*.teams.microsoft.com https://*.skype.com https://*.cloud.microsoft;",
-
-      // Allow iframe content
       "frame-src 'self' https:;",
       "object-src 'none';",
       "base-uri 'self';",
@@ -48,7 +44,6 @@ app.post('/api/saveAttachmentNames', (req, res) => {
 });
 
 
-// --- Simple HTML Page Endpoint ---
 app.get('/webview', (req, res) => {
   res.send(`
     <!DOCTYPE html>
@@ -65,7 +60,7 @@ app.get('/webview', (req, res) => {
           }
 
           .container {
-            max-width: 460px;
+            max-width: 500px;
             margin: auto;
             background: #fff;
             padding: 30px;
@@ -106,6 +101,15 @@ app.get('/webview', (req, res) => {
             cursor: pointer;
           }
 
+          .text-input {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            font-size: 15px;
+            border-radius: 8px;
+            border: 1px solid #bbb;
+          }
+
           .submit-btn {
             margin-top: 25px;
             padding: 12px;
@@ -123,6 +127,11 @@ app.get('/webview', (req, res) => {
       <body>
         <div class="container">
           <h2>Upload Attachments</h2>
+
+          <!-- Text Input -->
+          <textarea id="messageBox" class="text-input" placeholder="Enter message here..."></textarea>
+
+          <!-- File Upload Box -->
           <div class="file-box" onclick="document.getElementById('fileInput').click()">
             <span>Click to upload files</span>
           </div>
@@ -134,58 +143,82 @@ app.get('/webview', (req, res) => {
         </div>
 
         <script>
-          let selectedFiles = [];
+          let selectedFiles = []; // Actual File objects
           const fileInput = document.getElementById("fileInput");
           const fileList = document.getElementById("fileList");
           const submitBtn = document.getElementById("submitBtn");
+          const messageBox = document.getElementById("messageBox");
 
-          // When user selects files
+          // User selects files
           fileInput.addEventListener("change", () => {
             for (let file of fileInput.files) {
-              console.log("Selected file:", file.name);
-              selectedFiles.push(file.name);
+              selectedFiles.push(file);
             }
             renderFiles();
           });
 
           // Remove file
           function removeFile(name) {
-            selectedFiles = selectedFiles.filter(f => f !== name);
+            selectedFiles = selectedFiles.filter(f => f.name !== name);
             renderFiles();
           }
 
-          // Render file list
+          // Render UI list
           function renderFiles() {
             fileList.innerHTML = "";
-            selectedFiles.forEach(name => {
+
+            selectedFiles.forEach(file => {
               const item = document.createElement("div");
               item.className = "file-item";
               item.innerHTML = \`
-                <span>\${name}</span>
-                <button class="remove-btn" onclick="removeFile('\${name}')">✕</button>
+                <span>\${file.name}</span>
+                <button class="remove-btn" onclick="removeFile('\${file.name}')">✕</button>
               \`;
               fileList.appendChild(item);
             });
           }
 
-          // Handle submit
+          // Submit handler
           submitBtn.addEventListener("click", () => {
-            console.log("Submit clicked!");
-            console.log("Files to send:", selectedFiles);
+            const message = messageBox.value;
+            const urlParams = new URLSearchParams(window.location.search);
+            const email = urlParams.get("email");
+            const ticketId = urlParams.get("ticketId");
 
-            fetch('/api/saveAttachmentNames', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ attachments: selectedFiles })
+            console.log("Message:", message);
+            console.log("Files:", selectedFiles);
+
+            const formData = new FormData();
+            formData.append("message", message);
+
+            selectedFiles.forEach((file, index) => {
+              formData.append("attachments", file); // backend receives array
+            });
+
+            formData.append("email", email);
+            formData.append("ticketId", ticketId);
+
+            for (let [key, value] of formData.entries()) {
+              console.log(key, value);
+            }
+
+            fetch("https://699361c7573b.ngrok-free.app/api/sendAttachments", {
+              method: "POST",
+              body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+              console.log("Response:", data);
+              alert("Uploaded successfully!");
             })
             .catch(err => console.error("Error:", err));
           });
-
         </script>
       </body>
     </html>
   `);
 });
+
 
 
 // --- Start Server ---
