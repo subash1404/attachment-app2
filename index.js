@@ -120,6 +120,20 @@ app.get('/webview', (req, res) => {
             font-size: 16px;
             cursor: pointer;
             width: 100%;
+            opacity: 0.6;
+            cursor: not-allowed;
+          }
+
+          .success-box {
+            margin-top: 20px;
+            padding: 15px;
+            background: #d4edda;
+            color: #155724;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.6s;
           }
         </style>
       </head>
@@ -139,7 +153,12 @@ app.get('/webview', (req, res) => {
           <input id="fileInput" type="file" multiple />
           <div id="fileList"></div>
 
-          <button class="submit-btn" id="submitBtn">Submit</button>
+          <button class="submit-btn" id="submitBtn" disabled>Submit</button>
+
+          <div class="success-box" id="successBox">
+            ✔️ Attachments uploaded successfully!<br>
+            You can now close this window.
+          </div>
         </div>
 
         <script>
@@ -148,6 +167,20 @@ app.get('/webview', (req, res) => {
           const fileList = document.getElementById("fileList");
           const submitBtn = document.getElementById("submitBtn");
           const messageBox = document.getElementById("messageBox");
+          const successBox = document.getElementById("successBox");
+
+          // Enable/disable submit button depending on attachments
+          function updateSubmitButton() {
+            if (selectedFiles.length > 0) {
+              submitBtn.disabled = false;
+              submitBtn.style.opacity = "1";
+              submitBtn.style.cursor = "pointer";
+            } else {
+              submitBtn.disabled = true;
+              submitBtn.style.opacity = "0.6";
+              submitBtn.style.cursor = "not-allowed";
+            }
+          }
 
           // User selects files
           fileInput.addEventListener("change", () => {
@@ -155,18 +188,19 @@ app.get('/webview', (req, res) => {
               selectedFiles.push(file);
             }
             renderFiles();
+            updateSubmitButton();
           });
 
           // Remove file
           function removeFile(name) {
             selectedFiles = selectedFiles.filter(f => f.name !== name);
             renderFiles();
+            updateSubmitButton();
           }
 
-          // Render UI list
+          // Render UI file list
           function renderFiles() {
             fileList.innerHTML = "";
-
             selectedFiles.forEach(file => {
               const item = document.createElement("div");
               item.className = "file-item";
@@ -182,42 +216,73 @@ app.get('/webview', (req, res) => {
           submitBtn.addEventListener("click", () => {
             const message = messageBox.value;
             const urlParams = new URLSearchParams(window.location.search);
-            const email = urlParams.get("email");
+            const aadObjectId = urlParams.get("aadObjectId");
             const ticketId = urlParams.get("ticketId");
-
-            console.log("Message:", message);
-            console.log("Files:", selectedFiles);
 
             const formData = new FormData();
             formData.append("message", message);
 
-            selectedFiles.forEach((file, index) => {
-              formData.append("attachments", file); // backend receives array
-            });
-
-            formData.append("email", email);
+            selectedFiles.forEach((file) => formData.append("attachments", file));
+            formData.append("aadObjectId", aadObjectId);
             formData.append("ticketId", ticketId);
 
-            for (let [key, value] of formData.entries()) {
-              console.log(key, value);
-            }
+            // Disable button during upload
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = "0.6";
+            submitBtn.style.cursor = "not-allowed";
+            submitBtn.innerText = "Uploading...";
 
             fetch("https://699361c7573b.ngrok-free.app/api/sendAttachments", {
               method: "POST",
               body: formData
             })
-            .then(res => res.json())
-            .then(data => {
-              console.log("Response:", data);
-              alert("Uploaded successfully!");
-            })
-            .catch(err => console.error("Error:", err));
+              .then(res => {
+                return res.json();
+              })
+              .then(data => {
+                console.log("Response:", data);
+
+                // Show success box
+                successBox.style.display = "block";
+                setTimeout(() => {
+                  successBox.style.opacity = "1";
+                }, 50);
+
+                // Reset inputs
+                messageBox.value = "";
+                selectedFiles = [];
+                fileList.innerHTML = "";
+
+                // Disable button again
+                updateSubmitButton();
+
+                submitBtn.innerText = "Submit";
+              })
+              .catch(err => {
+                console.error(err);
+                // Show success box
+                successBox.style.display = "block";
+                setTimeout(() => {
+                  successBox.style.opacity = "1";
+                }, 50);
+
+                // Reset inputs
+                messageBox.value = "";
+                selectedFiles = [];
+                fileList.innerHTML = "";
+
+                // Disable button again
+                updateSubmitButton();
+
+                submitBtn.innerText = "Submit";
+              });
           });
         </script>
       </body>
     </html>
   `);
 });
+
 
 
 
