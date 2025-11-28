@@ -49,8 +49,9 @@ app.get('/webview', (req, res) => {
     <!DOCTYPE html>
     <html>
       <head>
-        <title>Upload Attachments</title>
+        <title>Attach a file</title>
         <meta charset="UTF-8" />
+
         <style>
           body {
             font-family: Arial, sans-serif;
@@ -66,16 +67,30 @@ app.get('/webview', (req, res) => {
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            text-align: center;
           }
 
-          .file-box {
+          h2 {
+            margin-bottom: 8px;
+          }
+
+          .upload-box {
             margin-top: 20px;
-            padding: 30px;
-            border: 2px dashed #1a73e8;
+            padding: 35px;
+            border: 2px dashed #ccc;
             border-radius: 12px;
-            background: #eef4ff;
+            background: #fafafa;
+            text-align: center;
             cursor: pointer;
+          }
+
+          .upload-box img {
+            width: 70px;
+            opacity: 0.8;
+          }
+
+          .upload-box-text {
+            margin-top: 10px;
+            color: #777;
           }
 
           #fileInput {
@@ -96,8 +111,8 @@ app.get('/webview', (req, res) => {
           .remove-btn {
             background: none;
             border: none;
-            color: red;
-            font-size: 18px;
+            color: #d00000;
+            font-size: 20px;
             cursor: pointer;
           }
 
@@ -110,18 +125,32 @@ app.get('/webview', (req, res) => {
             border: 1px solid #bbb;
           }
 
-          .submit-btn {
+          .button-row {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
             margin-top: 25px;
-            padding: 12px;
-            background: #1a73e8;
-            color: #fff;
+          }
+
+          .cancel-btn {
+            background: transparent;
             border: none;
-            border-radius: 8px;
+            color: #555;
             font-size: 16px;
             cursor: pointer;
-            width: 100%;
-            opacity: 0.6;
-            cursor: not-allowed;
+          }
+
+          .upload-btn {
+            padding: 10px 20px;
+            background: #000;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
           }
 
           .success-box {
@@ -140,20 +169,23 @@ app.get('/webview', (req, res) => {
 
       <body>
         <div class="container">
-          <h2>Upload Attachments</h2>
+          <h2>Attach files</h2>
+          <p style="color:#777; margin-top:-5px;">Select files to upload</p>
 
-          <!-- Text Input -->
-          <textarea id="messageBox" class="text-input" placeholder="Enter message here..."></textarea>
-
-          <!-- File Upload Box -->
-          <div class="file-box" onclick="document.getElementById('fileInput').click()">
-            <span>Click to upload files</span>
+          <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+            <div class="upload-box-text">Drag and drop or attach a file</div>
           </div>
 
           <input id="fileInput" type="file" multiple />
           <div id="fileList"></div>
 
-          <button class="submit-btn" id="submitBtn" disabled>Submit</button>
+          <label style="margin-top:20px; display:block;">Optional message to this attachment</label>
+          <textarea id="messageBox" class="text-input" placeholder="Add message here"></textarea>
+
+          <div class="button-row">
+            <button class="cancel-btn" onclick="cancelUpload()">Cancel</button>
+            <button class="upload-btn" id="submitBtn" disabled>📤 Upload</button>
+          </div>
 
           <div class="success-box" id="successBox">
             ✔️ Attachments uploaded successfully!<br>
@@ -162,119 +194,84 @@ app.get('/webview', (req, res) => {
         </div>
 
         <script>
-          let selectedFiles = []; // Actual File objects
+          let selectedFiles = [];
           const fileInput = document.getElementById("fileInput");
           const fileList = document.getElementById("fileList");
           const submitBtn = document.getElementById("submitBtn");
-          const messageBox = document.getElementById("messageBox");
           const successBox = document.getElementById("successBox");
+          const messageBox = document.getElementById("messageBox");
 
-          // Enable/disable submit button depending on attachments
           function updateSubmitButton() {
-            if (selectedFiles.length > 0) {
-              submitBtn.disabled = false;
-              submitBtn.style.opacity = "1";
-              submitBtn.style.cursor = "pointer";
-            } else {
-              submitBtn.disabled = true;
-              submitBtn.style.opacity = "0.6";
-              submitBtn.style.cursor = "not-allowed";
-            }
+            submitBtn.disabled = selectedFiles.length === 0;
           }
 
-          // User selects files
           fileInput.addEventListener("change", () => {
-            for (let file of fileInput.files) {
-              selectedFiles.push(file);
-            }
+            for (let file of fileInput.files) selectedFiles.push(file);
             renderFiles();
             updateSubmitButton();
           });
 
-          // Remove file
           function removeFile(name) {
             selectedFiles = selectedFiles.filter(f => f.name !== name);
             renderFiles();
             updateSubmitButton();
           }
 
-          // Render UI file list
           function renderFiles() {
-            fileList.innerHTML = "";
+            fileList.innerHTML = '';
             selectedFiles.forEach(file => {
-              const item = document.createElement("div");
-              item.className = "file-item";
-              item.innerHTML = \`
-                <span>\${file.name}</span>
-                <button class="remove-btn" onclick="removeFile('\${file.name}')">✕</button>
+              fileList.innerHTML += \`
+                <div class="file-item">
+                  <span>\${file.name}</span>
+                  <button class="remove-btn" onclick="removeFile('\${file.name}')">❌</button>
+                </div>
               \`;
-              fileList.appendChild(item);
             });
           }
 
-          // Submit handler
+          function cancelUpload() {
+            selectedFiles = [];
+            fileList.innerHTML = "";
+            messageBox.value = "";
+            updateSubmitButton();
+          }
+
           submitBtn.addEventListener("click", () => {
-            const message = messageBox.value;
             const urlParams = new URLSearchParams(window.location.search);
             const aadObjectId = urlParams.get("aadObjectId");
             const ticketId = urlParams.get("ticketId");
+            const message = messageBox.value;
 
             const formData = new FormData();
             formData.append("message", message);
-
-            selectedFiles.forEach((file) => formData.append("attachments", file));
             formData.append("aadObjectId", aadObjectId);
             formData.append("ticketId", ticketId);
 
-            // Disable button during upload
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = "0.6";
-            submitBtn.style.cursor = "not-allowed";
+            selectedFiles.forEach(f => formData.append("attachments", f));
+
             submitBtn.innerText = "Uploading...";
+            submitBtn.disabled = true;
 
-            fetch("https://699361c7573b.ngrok-free.app/api/sendAttachments", {
-              method: "POST",
-              body: formData
-            })
-              .then(res => {
-                return res.json();
-              })
-              .then(data => {
-                console.log("Response:", data);
-
-                // Show success box
+            fetch("https://699361c7573b.ngrok-free.app/api/sendAttachments", { method: "POST", body: formData })
+              .then(r => r.json())
+              .then(() => {
                 successBox.style.display = "block";
-                setTimeout(() => {
-                  successBox.style.opacity = "1";
-                }, 50);
+                setTimeout(() => successBox.style.opacity = "1", 50);
 
-                // Reset inputs
-                messageBox.value = "";
                 selectedFiles = [];
                 fileList.innerHTML = "";
-
-                // Disable button again
-                updateSubmitButton();
-
-                submitBtn.innerText = "Submit";
-              })
-              .catch(err => {
-                console.error(err);
-                // Show success box
-                successBox.style.display = "block";
-                setTimeout(() => {
-                  successBox.style.opacity = "1";
-                }, 50);
-
-                // Reset inputs
                 messageBox.value = "";
+                updateSubmitButton();
+                submitBtn.innerText = "📤 Upload";
+              })
+              .catch(() => {
+                successBox.style.display = "block";
+                setTimeout(() => successBox.style.opacity = "1", 50);
                 selectedFiles = [];
                 fileList.innerHTML = "";
-
-                // Disable button again
+                messageBox.value = "";
                 updateSubmitButton();
-
-                submitBtn.innerText = "Submit";
+                submitBtn.innerText = "📤 Upload";
               });
           });
         </script>
@@ -283,10 +280,6 @@ app.get('/webview', (req, res) => {
   `);
 });
 
-
-
-
-// --- Start Server ---
 app.listen(PORT, () => {
   console.log(`Attachment backend running on http://localhost:${PORT}`);
 });
