@@ -15,16 +15,16 @@ app.use(cors({
 app.use(express.json());
 
 
-app.use((req, res, next) => {
-  res.setHeader(
-    "Content-Security-Policy",
-    [
-      "connect-src 'self' http://localhost:3978 https://699361c7573b.ngrok-free.app ",
-      "frame-ancestors 'self' "
-    ].join(" ")
-  );
-  next();
-});
+// app.use((req, res, next) => {
+//   res.setHeader(
+//     "Content-Security-Policy",
+//     [
+//       "connect-src 'self' http://localhost:3978 https://699361c7573b.ngrok-free.app ",
+//       "frame-ancestors 'self' "
+//     ].join(" ")
+//   );
+//   next();
+// });
 
 
 // --- Health Check ---
