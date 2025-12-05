@@ -19,8 +19,8 @@ app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
     [
-      "connect-src 'self' http://localhost:3978 https://699361c7573b.ngrok-free.app https://*.teams.microsoft.com",
-      "frame-ancestors 'self' https://*.teams.microsoft.com"
+      "connect-src 'self' http://localhost:3978 https://699361c7573b.ngrok-free.app ",
+      "frame-ancestors 'self' "
     ].join(" ")
   );
   next();
