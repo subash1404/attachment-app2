@@ -19,15 +19,8 @@ app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
     [
-      "default-src 'self';",
-      "script-src 'self' 'unsafe-inline';",
-      "style-src 'self' 'unsafe-inline';",
-      "img-src 'self' data: blob:;",
       "connect-src 'self' http://localhost:3978 https://699361c7573b.ngrok-free.app https://*.teams.microsoft.com",
-      "frame-ancestors 'self' https://*.teams.microsoft.com",
-      "frame-src 'self' https:;",
-      "object-src 'none';",
-      "base-uri 'self';",
+      "frame-ancestors 'self' https://*.teams.microsoft.com"
     ].join(" ")
   );
   next();
