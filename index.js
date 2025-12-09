@@ -14,14 +14,23 @@ app.use(cors({
 
 app.use(express.json());
 
+
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
-    "frame-ancestors 'self' https://*.microsoft.com https://*.office.com https://*.teams.microsoft.com https://*.cloud.microsoft;"
+    [
+      "default-src 'self';",
+      "script-src 'self' 'unsafe-inline';",
+      "style-src 'self' 'unsafe-inline';",
+      "img-src 'self' data: blob:;",
+      "frame-ancestors 'self' https://*.microsoft.com https://*.office.com https://*.teams.microsoft.com https://*.cloud.microsoft;",
+      "frame-src 'self' https:;",
+      "object-src 'none';",
+      "base-uri 'self';",
+    ].join(" ")
   );
   next();
 });
-
 
 
 // --- Health Check ---
