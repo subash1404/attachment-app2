@@ -15,17 +15,6 @@ app.use(cors({
 app.use(express.json());
 
 
-// app.use((req, res, next) => {
-//   res.setHeader(
-//     "Content-Security-Policy",
-//     [
-//       "connect-src 'self' http://localhost:3978 https://699361c7573b.ngrok-free.app ",
-//       "frame-ancestors 'self' "
-//     ].join(" ")
-//   );
-//   next();
-// });
-
 
 // --- Health Check ---
 app.get('/api/health', (req, res) => res.json({ ok: true }));
@@ -163,7 +152,7 @@ app.get('/webview', (req, res) => {
       <body>
         <div class="container">
           <h2>Attach files</h2>
-          <p style="color:#777; margin-top:-5px;">Select file to upload</p>
+          <p style="color:#777; margin-top:-5px;">Select files to upload</p>
 
           <div class="upload-box" onclick="document.getElementById('fileInput').click()">
             <svg xmlns="http://www.w3.org/2000/svg" width="74" height="69" viewBox="0 0 74 69" fill="none">
