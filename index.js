@@ -24,7 +24,7 @@ app.use((req, res, next) => {
       "style-src 'self' 'unsafe-inline';",
       "img-src 'self' data: blob:;",
       "connect-src 'self' http://localhost:3978 https://699361c7573b.ngrok-free.app https://*.microsoft.com https://*.teams.microsoft.com https://*.office.com;",
-      "frame-ancestors 'self' https://*.microsoft.com https://*.office.com https://*.teams.microsoft.com https://*.cloud.microsoft;",
+      "frame-ancestors 'self' https://*.microsoft.com https://*.office.com https://*.teams.microsoft.com https://*.skype.com https://*.cloud.microsoft;",
       "frame-src 'self' https:;",
       "object-src 'none';",
       "base-uri 'self';",
