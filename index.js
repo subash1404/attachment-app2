@@ -14,6 +14,14 @@ app.use(cors({
 
 app.use(express.json());
 
+app.use((req, res, next) => {
+  res.setHeader(
+    "Content-Security-Policy",
+    "frame-ancestors 'self' https://*.cloud.microsoft;"
+  );
+  next();
+});
+
 
 
 // --- Health Check ---
