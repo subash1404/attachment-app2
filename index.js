@@ -17,7 +17,7 @@ app.use(express.json());
 app.use((req, res, next) => {
   res.setHeader(
     "Content-Security-Policy",
-    "frame-ancestors 'self' https://*.cloud.microsoft;"
+    "frame-ancestors 'self' https://*.microsoft.com https://*.office.com https://*.teams.microsoft.com https://*.cloud.microsoft;"
   );
   next();
 });
