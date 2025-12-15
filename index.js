@@ -264,7 +264,7 @@ app.get('/webview', (req, res) => {
             submitBtn.innerText = "Uploading...";
             submitBtn.disabled = true;
 
-            fetch("https://699361c7573b.ngrok-free.app/api/sendAttachments", { method: "POST", body: formData })
+            fetch("https://ee57bf005f37.ngrok-free.app/api/sendAttachments", { method: "POST", body: formData })
               .then(r => r.json())
               .then(() => {
                 successBox.style.display = "block";
