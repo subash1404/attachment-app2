@@ -198,8 +198,9 @@ app.get('/webview', (req, res) => {
             You can now close this window.
           </div>
         </div>
-
+        <script src="https://res.cdn.office.net/teams-js/2.0.0/js/MicrosoftTeams.min.js"></script>
         <script>
+          microsoftTeams.app.initialize()
           let selectedFiles = [];
           const fileInput = document.getElementById("fileInput");
           const fileList = document.getElementById("fileList");
@@ -258,13 +259,19 @@ app.get('/webview', (req, res) => {
             formData.append("message", message);
             formData.append("aadObjectId", aadObjectId);
             formData.append("ticketId", ticketId);
-
+            microsoftTeams.authentication.getAuthToken()
+                .then(token => {
+                    formData.append("teamsToken", token);
+                })
+                .catch(() => {
+                    throw new Error("Not running in Teams");
+                });
             selectedFiles.forEach(f => formData.append("attachments", f));
 
             submitBtn.innerText = "Uploading...";
             submitBtn.disabled = true;
 
-            fetch("https://ee57bf005f37.ngrok-free.app/api/sendAttachments", { method: "POST", body: formData })
+            fetch("https://38ffb3a12b90.ngrok-free.app/api/sendAttachments", { method: "POST", body: formData })
               .then(r => r.json())
               .then(() => {
                 successBox.style.display = "block";
