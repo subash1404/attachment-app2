@@ -253,15 +253,18 @@ app.get('/webview', (req, res) => {
           submitBtn.addEventListener("click", async () => {
             try {
 
+              await microsoftTeams.app.initialize()
               const urlParams = new URLSearchParams(window.location.search);
               const message = messageBox.value;
 
               const formData = new FormData();
               formData.append("message", message);
+              console.log(message);
 
               // 🔐 Get Teams-issued auth token
               const teamsToken = await microsoftTeams.authentication.getAuthToken();
               formData.append("teamsToken", teamsToken);
+              console.log(teamsToken);
 
               // Attach files AFTER token
               selectedFiles.forEach(f => formData.append("attachments", f));
