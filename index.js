@@ -252,18 +252,12 @@ app.get('/webview', (req, res) => {
 
           submitBtn.addEventListener("click", async () => {
             try {
-              // Ensure running inside Teams
-              await microsoftTeams.app.initialize();
 
               const urlParams = new URLSearchParams(window.location.search);
-              const aadObjectId = urlParams.get("aadObjectId");
-              const ticketId = urlParams.get("ticketId");
               const message = messageBox.value;
 
               const formData = new FormData();
               formData.append("message", message);
-              formData.append("aadObjectId", aadObjectId);
-              formData.append("ticketId", ticketId);
 
               // 🔐 Get Teams-issued auth token
               const teamsToken = await microsoftTeams.authentication.getAuthToken();
