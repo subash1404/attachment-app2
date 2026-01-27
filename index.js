@@ -200,7 +200,8 @@ app.get('/webview', (req, res) => {
         </div>
         <script src="https://res.cdn.office.net/teams-js/2.0.0/js/MicrosoftTeams.min.js"></script>
         <script>
-          microsoftTeams.app.initialize()
+          await microsoftTeams.app.initialize()</script>
+        <script>
           let selectedFiles = [];
           const fileInput = document.getElementById("fileInput");
           const fileList = document.getElementById("fileList");
@@ -249,49 +250,60 @@ app.get('/webview', (req, res) => {
             updateSubmitButton();
           }
 
-          submitBtn.addEventListener("click", () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const aadObjectId = urlParams.get("aadObjectId");
-            const ticketId = urlParams.get("ticketId");
-            const message = messageBox.value;
+          submitBtn.addEventListener("click", async () => {
+            try {
+              // Ensure running inside Teams
+              await microsoftTeams.app.initialize();
 
-            const formData = new FormData();
-            formData.append("message", message);
-            formData.append("aadObjectId", aadObjectId);
-            formData.append("ticketId", ticketId);
-            microsoftTeams.authentication.getAuthToken()
-                .then(token => {
-                    formData.append("teamsToken", token);
-                })
-                .catch(() => {
-                    throw new Error("Not running in Teams");
-                });
-            selectedFiles.forEach(f => formData.append("attachments", f));
+              const urlParams = new URLSearchParams(window.location.search);
+              const aadObjectId = urlParams.get("aadObjectId");
+              const ticketId = urlParams.get("ticketId");
+              const message = messageBox.value;
 
-            submitBtn.innerText = "Uploading...";
-            submitBtn.disabled = true;
+              const formData = new FormData();
+              formData.append("message", message);
+              formData.append("aadObjectId", aadObjectId);
+              formData.append("ticketId", ticketId);
 
-            fetch("https://38ffb3a12b90.ngrok-free.app/api/sendAttachments", { method: "POST", body: formData })
-              .then(r => r.json())
-              .then(() => {
-                successBox.style.display = "block";
-                setTimeout(() => successBox.style.opacity = "1", 50);
+              // 🔐 Get Teams-issued auth token
+              const teamsToken = await microsoftTeams.authentication.getAuthToken();
+              formData.append("teamsToken", teamsToken);
 
-                selectedFiles = [];
-                fileList.innerHTML = "";
-                messageBox.value = "";
-                updateSubmitButton();
-                submitBtn.innerText = "📤 Upload";
-              })
-              .catch(() => {
-                successBox.style.display = "block";
-                setTimeout(() => successBox.style.opacity = "1", 50);
-                selectedFiles = [];
-                fileList.innerHTML = "";
-                messageBox.value = "";
-                updateSubmitButton();
-                submitBtn.innerText = "📤 Upload";
-              });
+              // Attach files AFTER token
+              selectedFiles.forEach(f => formData.append("attachments", f));
+
+              submitBtn.innerText = "Uploading...";
+              submitBtn.disabled = true;
+
+              const response = await fetch(
+                "https://38ffb3a12b90.ngrok-free.app/api/sendAttachments",
+                { method: "POST", body: formData }
+              );
+
+              if (!response.ok) {
+                throw new Error("Upload failed");
+              }
+
+              await response.json();
+
+              successBox.style.display = "block";
+              setTimeout(() => successBox.style.opacity = "1", 50);
+
+            } catch (err) {
+              console.error("Not running in Teams or upload failed", err);
+
+              // ❌ Do NOT show success on failure
+              errorBox.style.display = "block";
+              errorBox.innerText = err.message || "Upload failed";
+
+            } finally {
+              selectedFiles = [];
+              fileList.innerHTML = "";
+              messageBox.value = "";
+              updateSubmitButton();
+              submitBtn.innerText = "📤 Upload";
+              submitBtn.disabled = false;
+            }
           });
         </script>
       </body>
