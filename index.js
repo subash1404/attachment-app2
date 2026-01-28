@@ -266,6 +266,19 @@ app.get('/webview', (req, res) => {
               // formData.append("teamsToken", teamsToken);
               // console.log("teams token = " + teamsToken);
 
+              await microsoftTeams.getContext(ctx => {
+                if (!ctx || !ctx.tid) {
+                    showErrorBox("Not running inside Microsoft Teams");
+                    enableAll();
+                    resetSubmitBtn();
+                    return;
+                }
+                formData.append("teamsTenantId", ctx.tid);
+                formData.append("teamsUserObjectId", ctx.userObjectId);
+                formData.append("teamsConversationType", ctx.conversationType);
+                formData.append("teamsHostClientType", ctx.hostClientType);
+              }); 
+
               // Attach files AFTER token
               selectedFiles.forEach(f => formData.append("attachments", f));
 
