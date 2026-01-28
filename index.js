@@ -254,7 +254,6 @@ app.get('/webview', (req, res) => {
             return new Promise((resolve, reject) => {
                 microsoftTeams.getContext((ctx) => {
                     if (!ctx) return reject("Not running in Teams");
-                    console.log("ctx = " + ctx);
                     resolve(ctx);
                 });
             });
@@ -277,6 +276,7 @@ app.get('/webview', (req, res) => {
               // console.log("teams token = " + teamsToken);
 
               const ctx = await getTeamsContextAsync();
+              console.log("ctx = " + ctx);
               formData.append("teamsTenantId", ctx.tid);
               formData.append("teamsUserObjectId", ctx.userObjectId);
               formData.append("teamsConversationType", ctx.conversationType);
