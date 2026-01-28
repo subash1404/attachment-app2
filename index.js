@@ -266,12 +266,13 @@ app.get('/webview', (req, res) => {
               // formData.append("teamsToken", teamsToken);
               // console.log("teams token = " + teamsToken);
 
-              const ctx = await microsoftTeams.getContext();
-              console.log("ctx: " + ctx);
-              formData.append("teamsTenantId", ctx.tid);
-              formData.append("teamsUserObjectId", ctx.userObjectId);
-              formData.append("teamsConversationType", ctx.conversationType);
-              formData.append("teamsHostClientType", ctx.hostClientType);
+              microsoftTeams.getContext((ctx) => {
+                console.log("ctx", ctx);
+                formData.append("teamsTenantId", ctx.tid);
+                formData.append("teamsUserObjectId", ctx.userObjectId);
+                formData.append("teamsConversationType", ctx.conversationType);
+                formData.append("teamsHostClientType", ctx.hostClientType);
+              });
 
               // Attach files AFTER token
               selectedFiles.forEach(f => formData.append("attachments", f));
