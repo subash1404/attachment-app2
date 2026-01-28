@@ -254,6 +254,7 @@ app.get('/webview', (req, res) => {
             return new Promise((resolve, reject) => {
                 microsoftTeams.getContext((ctx) => {
                     if (!ctx) return reject("Not running in Teams");
+                    console.log("ctx = " + ctx);
                     resolve(ctx);
                 });
             });
