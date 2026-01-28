@@ -262,9 +262,9 @@ app.get('/webview', (req, res) => {
               console.log(message);
 
               // 🔐 Get Teams-issued auth token
-              const teamsToken = await microsoftTeams.authentication.getAuthToken();
+              const teamsToken = await microsoftTeams.authentication.getAuthToken({ silent: true });
               formData.append("teamsToken", teamsToken);
-              console.log(teamsToken);
+              console.log("teams token = " + teamsToken);
 
               // Attach files AFTER token
               selectedFiles.forEach(f => formData.append("attachments", f));
