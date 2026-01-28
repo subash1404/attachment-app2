@@ -276,7 +276,7 @@ app.get('/webview', (req, res) => {
               // console.log("teams token = " + teamsToken);
 
               const ctx = await getTeamsContextAsync();
-              console.log("ctx = " + ctx);
+              console.log("ctx:", ctx);
               formData.append("teamsTenantId", ctx.tid);
               formData.append("teamsUserObjectId", ctx.userObjectId);
               formData.append("teamsConversationType", ctx.conversationType);
