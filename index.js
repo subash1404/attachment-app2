@@ -250,6 +250,15 @@ app.get('/webview', (req, res) => {
             updateSubmitButton();
           }
 
+          function getTeamsContextAsync() {
+            return new Promise((resolve, reject) => {
+                microsoftTeams.getContext((ctx) => {
+                    if (!ctx) return reject("Not running in Teams");
+                    resolve(ctx);
+                });
+            });
+          }
+
           submitBtn.addEventListener("click", async () => {
             try {
 
@@ -266,13 +275,11 @@ app.get('/webview', (req, res) => {
               // formData.append("teamsToken", teamsToken);
               // console.log("teams token = " + teamsToken);
 
-              microsoftTeams.getContext((ctx) => {
-                console.log("ctx", ctx);
-                formData.append("teamsTenantId", ctx.tid);
-                formData.append("teamsUserObjectId", ctx.userObjectId);
-                formData.append("teamsConversationType", ctx.conversationType);
-                formData.append("teamsHostClientType", ctx.hostClientType);
-              });
+              const ctx = await getTeamsContextAsync();
+              formData.append("teamsTenantId", ctx.tid);
+              formData.append("teamsUserObjectId", ctx.userObjectId);
+              formData.append("teamsConversationType", ctx.conversationType);
+              formData.append("teamsHostClientType", ctx.hostClientType);
 
               // Attach files AFTER token
               selectedFiles.forEach(f => formData.append("attachments", f));
