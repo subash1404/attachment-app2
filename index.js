@@ -262,7 +262,7 @@ app.get('/webview', (req, res) => {
               console.log(message);
 
               // 🔐 Get Teams-issued auth token
-              const teamsToken = await microsoftTeams.authentication.getAuthToken({ silent: true });
+              const teamsToken = await microsoftTeams.authentication.getAuthToken();
               formData.append("teamsToken", teamsToken);
               console.log("teams token = " + teamsToken);
 
